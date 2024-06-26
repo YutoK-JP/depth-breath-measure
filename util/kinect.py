@@ -9,7 +9,7 @@ def joints2dist(joints):
     for j in joints:
       data[j.get_name()] = j.numpy()
     return data
-  
+   
 def mapCvt(org, level, width):
     min_value = level-width/2
     img = org - min_value
@@ -56,6 +56,11 @@ class Kinect:
   @property
   def color_img(self):
     return self.colored_skeleton
+  
+  def joints2d(self):
+    body2d = self.body_frame.get_body2d()
+    joints2d = joints2dist(body2d.joints)
+    return joints2d
       
   def update(self):
     while True:

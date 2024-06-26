@@ -1,7 +1,7 @@
 import cv2
 import time
 import numpy as np
-import utils
+import util.utils_old as utils_old
 import sys
 
 from pyqtgraph.Qt import QtCore
@@ -18,7 +18,7 @@ DEPTH_WIDTH = 180     #depthImageBox.frameGeometry().width()
 COLOR_WIDTH = 440
 COLOR_HEIGHT = 320
 dt = 1/FPS
-WEIGHT_METHOD = utils.Weight_Method
+WEIGHT_METHOD = utils_old.Weight_Method
 METHOD_NAMES = WEIGHT_METHOD.keys()
 #port = "COM7"
 port=None
@@ -79,9 +79,9 @@ Y_global_median = []
 Y_pelvis_fft  = []
 ptr=1
 
-kinect = utils.Kinect()
+kinect = utils_old.Kinect()
 if port is not None:
-  arduino = utils.SerialArduino(port)
+  arduino = utils_old.SerialArduino(port)
 else:
   arduino = None
 
