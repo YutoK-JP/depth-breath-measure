@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>937</width>
+    <width>1047</width>
     <height>558</height>
    </rect>
   </property>
@@ -21,13 +21,13 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>921</width>
+     <width>1031</width>
      <height>541</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="6,6,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="6,6,0">
       <property name="sizeConstraint">
        <enum>QLayout::SetFixedSize</enum>
       </property>
@@ -38,18 +38,22 @@
        <widget class="QGraphicsView" name="ProcImage"/>
       </item>
       <item>
-       <widget class="QLabel" name="Info">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 255);
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="12">
+        <item>
+         <widget class="QLabel" name="Info">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 255);
 font: 25 18pt &quot;Noto Sans JP Light&quot;;</string>
-        </property>
-        <property name="text">
-         <string>aaa</string>
-        </property>
-        <property name="margin">
-         <number>5</number>
-        </property>
-       </widget>
+          </property>
+          <property name="text">
+           <string>aaa</string>
+          </property>
+          <property name="margin">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -60,6 +64,9 @@ font: 25 18pt &quot;Noto Sans JP Light&quot;;</string>
       </item>
       <item>
        <widget class="GraphicsLayoutWidget" name="graph2"/>
+      </item>
+      <item>
+       <widget class="GraphicsLayoutWidget" name="graph3"/>
       </item>
      </layout>
     </item>

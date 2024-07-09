@@ -2,6 +2,7 @@ import cv2
 import pykinect_azure as pykinect
 import numpy as np
 import time
+import threading
 
 import serial
 from serial.tools import list_ports
@@ -38,8 +39,6 @@ def step(x, threshold=0.5):
 
 Weight_Method = {"nolinear":nolinear, "linear":linear, "step":step}
 
-
-
 class Kinect:
   def __init__(self, device_config=None):
     pykinect.initialize_libraries(track_body=True)
@@ -55,13 +54,14 @@ class Kinect:
     self.bodyTracker = pykinect.start_body_tracker()#model_type=pykinect.K4ABT_LITE_MODEL)
     self.capture = None
     self.body_num = 0
-    
-  
+    self.depth_img = None
+    self.color_img = None
     
   def update(self):
     while True:
       self.capture = self.device.update()
       self.body_frame = self.bodyTracker.update()
+      
       
       self.update_body_closest()
       if self.body_num != 0:
@@ -73,10 +73,14 @@ class Kinect:
     _, color_image = self.capture.get_color_image()
     color_skeleton = self.body_frame.draw_bodies(color_image, pykinect.K4A_CALIBRATION_TYPE_COLOR)
     
+    self.depth_img = depth_image
+    self.color_img = color_image
+    
     masked_depth = np.where(segment_image==0, depth_image, 0)
       
     neck, pelvis = self.target_joints["neck"], self.target_joints["pelvis"]
     
+    self.joints = [self.target_joints[i] for i in ("neck", "pelvis", "left shoulder", "right shoulder")]
     
     return masked_depth, (neck, pelvis), color_skeleton   
   
@@ -86,6 +90,8 @@ class Kinect:
     norm_max = 0
     for idx in range(self.body_num):
       body = self.body_frame.get_body2d(idx)
+      body3d = self.body_frame.get_body(idx)
+      joints3d = joints2dist(body3d.joints)
       joints = joints2dist(body.joints)
       neck = joints["neck"]
       pelvis = joints["pelvis"]
@@ -93,26 +99,51 @@ class Kinect:
       if vec_norm > norm_max:
         self.target_idx = idx
         self.target_joints = joints.copy()
+        
+        self.joints3d = joints3d.copy()
       
   def get_depth_image(self):
     return 
     
 class SerialArduino:
   def __init__(self, port=None, baudorate=9600, timeout=2):
-    if port is None:
-      port = self.search_port()
-      
-    self.ser = serial.Serial(port, baudrate=baudorate, timeout=timeout)
-    
-  def search_port(self):
     ports = list(list_ports.comports())
-    if ports:
-      return ports[0].device
-    return None
+    port_list = list(map(lambda d:d.device, ports))
+    
+    print(port_list)
+    print(port in port_list)
+    self.available = True
+    if ports and port is None:
+      port = port_list[0]
+    elif port in port_list:
+      port = port
+    else:
+      self.available = False
+    
+    if self.available:
+      self.ser = serial.Serial(port, baudrate=baudorate, timeout=timeout)
+      self.alive = True 
+      self.thread = threading.Thread(target=self.readloop)
+      self.thread.start()
+      self.value = -1
 
+  def readloop(self):
+    while self.alive:
+      data = self.ser.readline()
+      if data != b'\r\n' and data != b'\n':
+        self.value = float(data[:4])
+        
+  def readAsync(self):
+    return self.value
+    
   def read(self):
     while True:
       data = self.ser.readline()
       if data != b'\r\n' and data != b'\n':
         return float(data[:4])
-  
+
+  def terminate(self):
+    if not(self.available):
+      return
+    self.alive = False
+    self.ser.close() 
