@@ -10,6 +10,9 @@ from PyQt5 import uic, QtGui, QtWidgets
 
 import os
 
+TRACKING_CYCLE = 10
+LIGHT_MODEL = True
+
 N = 5  # 脊椎の分割数
 GRAPH_WIDTH = 150  # グラフの横軸の数
 FPS = 30  # フレームレート
@@ -69,7 +72,7 @@ array_pressure = []
 
 ptr = 1
 
-kinect = Kinect()
+kinect = Kinect(light_model=LIGHT_MODEL)
 arduino = SerialArduino(port="COM4")
 
 print(bool(arduino))
@@ -80,8 +83,7 @@ def update():
   global array_stomach, array_global, array_pressure, array_torso, plot1, plot3
 
   frame_start = time.time()
-  # depth_img, (neck, pelvis, left_shoulder, right_shoulder), color_image = kinect.update()
-  kinect.update()
+  kinect.update(ptr % TRACKING_CYCLE==0)
   (neck, pelvis, left_shoulder, right_shoulder) = kinect.joints
   depth_img = kinect.depth_img
   color_image = kinect.color_img
@@ -249,6 +251,7 @@ def update():
   procImageBox.scene().addPixmap(depth_pixmap)
   win.Info.setText(f"""{array_global.__sizeof__()}""")
   # endregion
+  ptr += 1
 
 
 if __name__ == "__main__":
@@ -261,6 +264,7 @@ if __name__ == "__main__":
   
   arduino.terminate()
   idx=1
+  
   while True:
     filename = f"output\\data_{idx:02}.npz"
     if os.path.isfile(filename):

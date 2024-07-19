@@ -40,27 +40,29 @@ def step(x, threshold=0.5):
 Weight_Method = {"nolinear":nolinear, "linear":linear, "step":step}
 
 class Kinect:
-  def __init__(self, device_config=None):
+  def __init__(self, light_model=False):
     pykinect.initialize_libraries(track_body=True)
 
-    if device_config==None:
-      device_config = pykinect.default_configuration
-      device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_720P
-      device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
-      device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_30
-      device_config.color_format = pykinect.K4A_IMAGE_FORMAT_COLOR_BGRA32
+    device_config = pykinect.default_configuration
+    device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_720P
+    device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
+    device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_30
+    device_config.color_format = pykinect.K4A_IMAGE_FORMAT_COLOR_BGRA32
      
     self.device = pykinect.start_device(config=device_config)
-    self.bodyTracker = pykinect.start_body_tracker()#model_type=pykinect.K4ABT_LITE_MODEL)
+    self.bodyTracker = pykinect.start_body_tracker(
+      pykinect.K4ABT_LITE_MODEL if light_model 
+        else pykinect.K4ABT_DEFAULT_MODEL)
     self.capture = None
     self.body_num = 0
     self.depth_img = None
     self.color_img = None
     
-  def update(self):
+  def update(self, body=True):
     while True:
       self.capture = self.device.update()
-      self.body_frame = self.bodyTracker.update()
+      if body:
+        self.body_frame = self.bodyTracker.update()
       
       
       self.update_body_closest()
