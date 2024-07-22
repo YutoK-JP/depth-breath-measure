@@ -134,7 +134,7 @@ def update():
   gradation_distance = (
     y_grid - cropped_neck[1]) - (x_grid - cropped_neck[0]) * slope
 
-  # 1時間数に沿った肩幅位置
+  # 1次間数に沿った肩幅位置
   distance_right_shoulder = (cropped_right_shoulder[1] - cropped_neck[1]) - slope * (
     cropped_right_shoulder[0] - cropped_neck[0]
   )
@@ -161,7 +161,7 @@ def update():
     border_lower_stomach[1] * slope
   mask_stomach = np.where(
     (gradation_split > threshold_upeer_stomach)
-    ^ (gradation_split > threshold_lower_stomach),
+      ^ (gradation_split > threshold_lower_stomach),
     True,
     False,
 )
@@ -175,7 +175,7 @@ def update():
     border_lower_chest[1] * slope
   mask_chest = np.where(
     (gradation_split > threshold_upeer_chest)
-    ^ (gradation_split > threshold_lower_chest),
+      ^ (gradation_split > threshold_lower_chest),
     True,
     False,
   )
@@ -218,6 +218,7 @@ def update():
     np.uint8
   )
 
+  #肩幅に〇を描画
   cv2.circle(view_image, cropped_right_shoulder.astype(
     np.uint16), 10, (255, 0, 0), 2)
   cv2.circle(view_image, cropped_left_shoulder.astype(
@@ -249,7 +250,8 @@ def update():
   depth_pixmap = QtGui.QPixmap.fromImage(depth_image)
   procImageBox.scene().clear()
   procImageBox.scene().addPixmap(depth_pixmap)
-  win.Info.setText(f"""{array_global.__sizeof__()}""")
+  if ptr>10:
+    win.Info.setText(f"""fps:{(array_time[-1]-array_time[-10])/10}""")
   # endregion
   ptr += 1
 
@@ -263,14 +265,19 @@ if __name__ == "__main__":
   pg.exec()
   
   arduino.terminate()
-  idx=1
   
+  if not(os.path.isdir("./output")):
+      os.mkdir("./output")
+      
+  idx=1
   while True:
+    
+    
     filename = f"output\\data_{idx:02}.npz"
     if os.path.isfile(filename):
       idx += 1
       continue
-    print(filename)
+    
     if arduino.available:
       np.savez_compressed(
           filename,
